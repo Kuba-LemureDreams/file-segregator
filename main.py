@@ -3,15 +3,19 @@ import typer
 import os
 from typing_extensions import Annotated
 
-app = typer.Typer(help="A script to segregate files on your desktop or in other folders")
+#list for autocomplete of arguments in defpath command
+def complete_defaultpath():
+    return ["win", "here"]
+
+app = typer.Typer(help="A script to segregate files on your desktop or in other folders", rich_markup_mode="rich")
 
 @app.command("defpath")
-def default_path(auto_assign: Annotated[str, typer.Argument()]):
+def default_path(auto_assign: Annotated[str, typer.Argument(autocompletion=complete_defaultpath)]):
     """
-    Automatically load in path:
-    if option is win, then load desktop folder
-    if option is here, then load in script executable location
-    otherwise input is path
+    Automatically load in [bold blue]path[/bold blue]:
+    if option is [bold green]win[/bold green], then load desktop folder
+    if option is [bold green]here[/bold green], then load in script executable location
+    otherwise [bold green]input[/bold green] is path
     """
     if auto_assign == "win":
         op_user = typer.prompt("What is the name of your user folder?")
@@ -26,10 +30,12 @@ def default_path(auto_assign: Annotated[str, typer.Argument()]):
     f.write(seg_path)
     f.close()
 
+
+
 @app.command()
 def clean_tmp():
     """
-    Cleans temporary files.
+    [yellow]Cleans temporary files.[/yellow]
     """
     cleaning = typer.confirm("Are you sure you want to remove temporary files of the script?")
     if os.path.exists("./tmp") and cleaning:
@@ -48,7 +54,7 @@ def clean_tmp():
 @app.command("list")
 def list_items():
     """
-    If is True, then prints out items in a current folder
+    If is [bold green]True[/bold green], then prints out items in a current folder
     """
     f = open("./tmp/env.txt", "r")
     seg_path = f.read()
@@ -61,14 +67,14 @@ def list_items():
 @app.command()
 def segregate():
     """
-    Main function to segregate your files, just run and let magic happen
+    [cyan]Main function to segregate your files, just run and let magic happen.[/cyan]
     """
     f = open("./tmp/env.txt", "r")
     seg_path = f.read()
     f.close()
     file_tree = os.listdir(seg_path)
     for entry in file_tree:
-
+        #we don't talk about what happens below
         if entry.endswith(".jpg") or entry.endswith(".png") or entry.endswith(".jpeg") or entry.endswith(".webp") or entry.endswith(".gif"):
             if not os.path.exists(seg_path+"\\seg\\images"):
                 os.mkdir(seg_path+"\\seg")
@@ -106,8 +112,6 @@ def segregate():
             shutil.move(seg_path+"\\"+entry, seg_path+"\\seg\\executables\\"+entry)
 
     clean_tmp()
-
-
 
 if __name__ == '__main__':
     app()
